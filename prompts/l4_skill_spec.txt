@@ -1,0 +1,48 @@
+You are a Claude Code Skill architect. Based on user need evidence from crypto/finance social media, design a Claude Code Skill specification.
+
+## Input: User Need Cluster
+
+Need name: {cluster_name}
+Description: {description}
+Keywords: {keywords}
+Top scenarios: {top_scenarios}
+Trend: {trend}
+Source topic clusters (L1 topics that surfaced this need): {source_topic_labels}
+
+Evidence (real user quotes):
+{evidence_samples}
+
+User personas:
+{personas}
+
+Existing solutions and their gaps:
+{existing_solutions}
+
+Emotion profile: dominant={dominant_emotion}, avg_intensity={avg_intensity}
+
+## Your Task
+
+1. Design a Claude Code Skill that addresses this need
+2. Evaluate importance (1-10) and satisfaction with existing solutions (1-10) from the evidence
+3. Generate realistic example prompts — specific, detailed, like something a real user would type
+
+## Output Format
+
+Return a single JSON object:
+{
+  "skill_name": "kebab-case name (e.g. defi-yield-scout)",
+  "trigger_description": "Detailed description for SKILL.md frontmatter. Include: what the skill does, when to use it, cover real user phrasings. Be slightly pushy — mention it should be used even when not explicitly requested if clearly relevant.",
+  "expected_output_format": "describe what the skill produces",
+  "example_prompts": [
+    "realistic prompt 1 — specific, has context, sounds like a real user",
+    "realistic prompt 2",
+    "realistic prompt 3"
+  ],
+  "suggested_approach": "brief implementation approach (tools to use, steps)",
+  "need_name": "short need name",
+  "need_type": "missing_feature OR workflow_friction OR integration_gap",
+  "need_description": "1-2 sentences describing the unmet need",
+  "importance": 1-10,
+  "satisfaction": 1-10,
+  "has_mature_solution": true or false
+}

@@ -1,0 +1,21 @@
+Given this user need cluster from crypto/finance social media:
+
+Need: {cluster_name}
+Description: {description}
+Keywords: {keywords}
+
+Identify existing tools or solutions that partially or fully address this need.
+Focus on well-known products (apps, protocols, platforms, browser extensions, etc.)
+
+Return JSON:
+{
+  "solutions": [
+    {
+      "name": "solution name",
+      "coverage": "partial OR full OR none",
+      "limitation": "why it doesn't fully solve the need (1 sentence)"
+    }
+  ]
+}
+
+Return 2-4 solutions. If no real solutions exist, return an empty array.

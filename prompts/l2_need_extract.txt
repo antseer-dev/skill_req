@@ -1,0 +1,33 @@
+Analyze the following social media post and extract structured user need information.
+
+Return a JSON object with exactly these fields:
+{
+  "is_financial": true or false (boolean — true if the post is about finance, crypto, trading, DeFi, stocks, options, investment, banking, insurance, personal finance, market analysis, or economic policy; false for travel, entertainment, sports, food, social media trends, etc.),
+  "entity": "product/project/concept mentioned (string, required)",
+  "feature": "specific feature or aspect discussed (string, required)",
+  "opinion": "user's opinion or stance (string, required)",
+  "need_type": "explicit OR implicit",
+  "pain_point": "specific pain point if present, else null",
+  "root_cause": "root cause label if identifiable (e.g. missing_api, poor_ux, high_cost), else null",
+  "sentiment": "positive OR negative OR neutral",
+  "emotion": "one of: joy, sadness, anger, fear, surprise, disgust, frustration, confusion, excitement, disappointment, curiosity, approval, disapproval, gratitude, annoyance, desire, neutral",
+  "intensity": 0.0 to 1.0 (float),
+  "evidence": "most revealing quote from the post, max 60 chars",
+  "user_type": "trader OR developer OR investor OR researcher OR casual",
+  "experience_level": "beginner OR intermediate OR expert"
+}
+
+Rules:
+- is_financial: financial topics include crypto, DeFi, NFT, trading, stocks, ETFs, options, forex, lending, yield, liquidation, wallet, on-chain, macroeconomics, Fed/central banks, personal finance, fintech
+- is_financial: non-financial topics include travel safety, geopolitics unrelated to markets, sports, entertainment, fashion, food, general social media trends
+- need_type "explicit": user directly states they want something
+- need_type "implicit": need is inferred from a complaint or behavior
+- user_type "trader": focused on price action, signals, timing
+- user_type "developer": technical, talks about code/APIs/tools
+- user_type "investor": focused on fundamentals, long-term value
+- user_type "researcher": analytical, data-driven language
+- user_type "casual": general interest, non-technical
+- intensity 1.0 = extremely strong emotion, 0.0 = completely neutral
+
+Post:
+{text}

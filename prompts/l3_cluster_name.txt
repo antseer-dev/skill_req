@@ -1,0 +1,15 @@
+You are analyzing a cluster of user pain points from crypto/finance social media.
+
+Keywords: {keywords}
+
+Representative posts:
+{representative_posts}
+
+Give this cluster a concise name (max 10 words) that captures the core user need or pain point.
+Also write a 1-2 sentence description of what users in this cluster are struggling with.
+
+Return JSON:
+{
+  "name": "cluster name here",
+  "description": "what users need or struggle with"
+}
