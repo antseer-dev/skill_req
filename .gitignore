@@ -24,3 +24,7 @@ storage/tasks.db
 
 # Logs
 *.log
+
+# Runtime / local
+.server.pid
+claude.sh
