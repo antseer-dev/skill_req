@@ -42,3 +42,9 @@ TOP_N_SKILLS       = 10
 # ── Storage ───────────────────────────────────────────────
 DB_PATH     = "storage/cache.db"
 OUTPUT_DIR  = "output"
+
+# ── Callback ──────────────────────────────────────────────
+CALLBACK_URL = os.environ.get(
+    "CALLBACK_URL",
+    "http://localhost:8575/api/v1/workflow/task/callback",
+)
