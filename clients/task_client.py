@@ -131,7 +131,7 @@ class TaskClient:
             # Multi-topic file: { data: { task_id, topics: [...] } }
             topics_data = data["data"]["topics"]
             self._task_id = data["data"].get("task_id") or self._task_id
-            entry = next((t for t in topics_data if t.get("topic") == topic), None)
+            entry = next((t for t in topics_data if t.get("topic", "").lower() == topic.lower()), None)
             if not entry:
                 raise ValueError(f"Topic {topic!r} not found in {filename}")
         else:

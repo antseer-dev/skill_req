@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from pathlib import Path
 from clients.openrouter import OpenRouterClient
@@ -14,15 +15,18 @@ class L4SpecGenerator:
 
     async def generate(self, clusters: list[PainCluster]) -> list[SkillSpec]:
         top = clusters[: config.TOP_N_SKILLS]
-        logger.info("[L4] generating specs for top %d/%d cluster(s) (model=%s)...",
+        logger.info("[L4] generating specs for top %d/%d cluster(s) (model=%s, parallel)...",
                     len(top), len(clusters), config.MODEL_REPORT)
-        results = []
-        for i, c in enumerate(top, 1):
+
+        async def _build_one(i: int, c: PainCluster) -> SkillSpec:
             logger.info("[L4]   [%d/%d] building spec for cluster %d: %r", i, len(top), c.cluster_id, c.cluster_name)
-            results.append(await self._build_spec(c))
+            spec = await self._build_spec(c)
             logger.info("[L4]   [%d/%d] done → skill_name=%r, score=%.1f",
-                        i, len(top), results[-1].skill_name, results[-1].opportunity.final_score)
-        return results
+                        i, len(top), spec.skill_name, spec.opportunity.final_score)
+            return spec
+
+        results = await asyncio.gather(*[_build_one(i, c) for i, c in enumerate(top, 1)])
+        return list(results)
 
     async def _build_spec(self, cluster: PainCluster) -> SkillSpec:
         personas_str = "\n".join(
