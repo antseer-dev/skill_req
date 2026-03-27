@@ -61,7 +61,7 @@ class OpenRouterClient:
         if json_mode:
             body["response_format"] = {"type": "json_object"}
 
-        async with httpx.AsyncClient(timeout=60) as client:
+        async with httpx.AsyncClient(timeout=600) as client:
             for attempt in range(3):
                 try:
                     resp = await client.post(
@@ -85,7 +85,7 @@ class OpenRouterClient:
         n_batches = (len(texts) + batch_size - 1) // batch_size
         logger.info("[embed] %d text(s) → %d batch(es) (model=%s)", len(texts), n_batches, config.MODEL_EMBED)
 
-        async with httpx.AsyncClient(timeout=60) as client:
+        async with httpx.AsyncClient(timeout=600) as client:
             for i in range(0, len(texts), batch_size):
                 batch = texts[i : i + batch_size]
                 batch_num = i // batch_size + 1

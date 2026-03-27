@@ -15,13 +15,20 @@ from models import SkillSpec
 logger = logging.getLogger(__name__)
 
 
-async def run(run_id: str | None = None) -> list[SkillSpec]:
-    logger.info("pipeline starting (run_id=%s)", run_id or "auto")
+async def run(run_id: str | None = None, topic: str | None = None) -> list[SkillSpec]:
+    logger.info("pipeline starting (run_id=%s, topic=%s)", run_id or "auto", topic or "none")
 
     # L0: collect from task API
+    #   - topic mode: load single topic from local file (topic_{topic}.json)
+    #   - task_id mode: fetch by task_id from main API
+    #   - otherwise: fetch all from mock API
     logger.info("[L0] collecting posts...")
-    posts, states = await L0Collector().collect()
-    logger.info("[L0] %d posts collected from %d topics", len(posts), len(states))
+    if topic:
+        posts, states = await L0Collector(topic=topic).collect_topic_file(topic)
+        logger.info("[L0] %d posts collected for topic %s", len(posts), topic)
+    else:
+        posts, states = await L0Collector(task_id=run_id).collect()
+        logger.info("[L0] %d posts collected from %d topics", len(posts), len(states))
     if not posts:
         logger.warning("[L0] no posts — aborting")
         return []
@@ -53,7 +60,7 @@ async def run(run_id: str | None = None) -> list[SkillSpec]:
     specs = await L4SpecGenerator().generate(clusters)
     logger.info("[L4] %d skill specs generated", len(specs))
 
-    _write_output(specs, posts, clusters, run_id=run_id)
+    _write_output(specs, posts, clusters, run_id=run_id or topic)
     return specs
 
 
