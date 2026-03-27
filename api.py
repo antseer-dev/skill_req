@@ -5,15 +5,20 @@ POST /create_task   触发 pipeline，返回 task_id
 GET  /tasks         查询所有任务列表
 GET  /tasks/{id}    查询单个任务；completed 时含 specs_path / report_path
 
-Run: uvicorn api:app --reload
+Run: python api.py
 """
 import logging
+import os
 import sqlite3
 import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 
+from dotenv import load_dotenv
+load_dotenv()
+
+import httpx
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 import pipeline
 import config
@@ -59,6 +64,18 @@ def _init_db():
         """)
 
 
+async def _callback(task_id: str, demand_filename: str):
+    try:
+        async with httpx.AsyncClient(timeout=60) as client:
+            await client.post(
+                config.CALLBACK_URL,
+                json={"task_id": task_id, "demand_filename": demand_filename},
+            )
+        logging.getLogger(__name__).info(f"[callback] OK → task_id={task_id} demand_filename={demand_filename}")
+    except Exception as e:
+        logging.getLogger(__name__).warning(f"[callback] failed: {e}")
+
+
 async def _run(task_id: str, pipeline_run_id: str | None, pipeline_topic: str | None):
     with _conn() as c:
         c.execute("UPDATE tasks SET status='running' WHERE id=?", (task_id,))
@@ -72,6 +89,7 @@ async def _run(task_id: str, pipeline_run_id: str | None, pipeline_topic: str | 
                 "UPDATE tasks SET status='completed', completed_at=?, spec_count=?, specs_path=?, report_path=? WHERE id=?",
                 (_now(), len(specs), specs_path, report_path, task_id),
             )
+        await _callback(task_id, Path(report_path).name)
     except Exception as e:
         err_msg = f"{e.__class__.__name__}: {e}"
         with _conn() as c:
@@ -120,7 +138,14 @@ async def create_task(body: dict | None, background_tasks: BackgroundTasks):
             display_id = str(uuid.uuid4())
 
     with _conn() as c:
-        c.execute("INSERT INTO tasks (id, created_at) VALUES (?, ?)", (display_id, _now()))
+        exists = c.execute("SELECT 1 FROM tasks WHERE id=?", (display_id,)).fetchone()
+        if exists:
+            c.execute(
+                "UPDATE tasks SET status='pending', created_at=?, completed_at=NULL, spec_count=NULL, error=NULL, specs_path=NULL, report_path=NULL WHERE id=?",
+                (_now(), display_id),
+            )
+        else:
+            c.execute("INSERT INTO tasks (id, created_at) VALUES (?, ?)", (display_id, _now()))
 
     background_tasks.add_task(_run, display_id, pipeline_run_id, pipeline_topic)
     return {"task_id": display_id, "status": "pending"}
@@ -143,3 +168,9 @@ def get_task(task_id: str):
     if not row:
         raise HTTPException(status_code=404, detail="task not found")
     return dict(row)
+
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("api:app", host="0.0.0.0", port=port, reload=True)
